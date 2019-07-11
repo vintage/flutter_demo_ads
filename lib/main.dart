@@ -13,7 +13,12 @@ void main() {
   runApp(App());
 }
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
+  @override
+  _AppState createState() => _AppState();
+}
+
+class _AppState extends State<App> {
   void showBanner() {
     BannerAd(
       adUnitId: BannerAd.testAdUnitId,
@@ -40,11 +45,10 @@ class App extends StatelessWidget {
         RewardedVideoAd.instance.show();
       }
     };
-    RewardedVideoAd.instance
-      .load(
-        adUnitId: RewardedVideoAd.testAdUnitId,
-        targetingInfo: MobileAdTargetingInfo(),
-      );
+    RewardedVideoAd.instance.load(
+      adUnitId: RewardedVideoAd.testAdUnitId,
+      targetingInfo: MobileAdTargetingInfo(),
+    );
   }
 
   @override
@@ -56,12 +60,18 @@ class App extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              RaisedButton(child: Text("Show banner"), onPressed: showBanner),
               RaisedButton(
-                  child: Text("Show interstitial"),
-                  onPressed: showInterstitial),
+                child: Text("Show banner"),
+                onPressed: showBanner,
+              ),
               RaisedButton(
-                  child: Text("Show reward video"), onPressed: showRewardVideo),
+                child: Text("Show interstitial"),
+                onPressed: showInterstitial,
+              ),
+              RaisedButton(
+                child: Text("Show reward video"),
+                onPressed: showRewardVideo,
+              ),
             ],
           ),
         ),
