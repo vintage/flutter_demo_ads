@@ -19,23 +19,47 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  void showBanner() {
-    BannerAd(
+  InterstitialAd interstitial;
+
+  @override
+  void initState() {
+    showBanner();
+    loadInterstitial();
+    super.initState();
+  }
+
+  void loadInterstitial() {
+    interstitial = InterstitialAd(
+      adUnitId: InterstitialAd.testAdUnitId,
+      targetingInfo: MobileAdTargetingInfo(),
+    );
+    interstitial.listener = (MobileAdEvent event) {
+      if (event == MobileAdEvent.closed) {
+        loadInterstitial();
+      }
+    };
+    interstitial.load();
+  }
+
+  void showBanner() async {
+    var banner = BannerAd(
       adUnitId: BannerAd.testAdUnitId,
       targetingInfo: MobileAdTargetingInfo(),
       size: AdSize.smartBanner,
-    )
-      ..load()
-      ..show();
+    );
+    banner.listener = (MobileAdEvent event) {
+      print("Banner event [$event]");
+      if (event == MobileAdEvent.loaded) {
+        banner.show();
+      }
+    };
+    banner.load();
   }
 
-  void showInterstitial() {
-    InterstitialAd(
-      adUnitId: InterstitialAd.testAdUnitId,
-      targetingInfo: MobileAdTargetingInfo(),
-    )
-      ..load()
-      ..show();
+  void showInterstitial() async {
+    if (await interstitial.isLoaded()) {
+      interstitial.show();
+    }
   }
 
   void showRewardVideo() {
@@ -60,13 +84,18 @@ class _AppState extends State<App> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              RaisedButton(
-                child: Text("Show banner"),
-                onPressed: showBanner,
-              ),
-              RaisedButton(
-                child: Text("Show interstitial"),
-                onPressed: showInterstitial,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Container(width: 50, height: 50, color: Colors.green),
+                  Container(width: 50, height: 50, color: Colors.green),
+                  GestureDetector(
+                    child: Container(width: 50, height: 50, color: Colors.red),
+                    onTap: showInterstitial,
+                  ),
+                  Container(width: 50, height: 50, color: Colors.green),
+                  Container(width: 50, height: 50, color: Colors.green),
+                ],
               ),
               RaisedButton(
                 child: Text("Show reward video"),
