@@ -71,7 +71,6 @@ class _AppState extends State<App> {
       size: AdSize.smartBanner,
     );
     banner.listener = (MobileAdEvent event) {
-      print("Banner event [$event]");
       if (event == MobileAdEvent.loaded) {
         banner.show();
       }
@@ -90,7 +89,6 @@ class _AppState extends State<App> {
   void loadRewardVideo() {
     RewardedVideoAd.instance.listener =
         (RewardedVideoAdEvent event, {String rewardType, int rewardAmount}) {
-      print("RewardVideo event [$event], [$rewardType], [$rewardAmount]");
       if (event == RewardedVideoAdEvent.closed) {
         loadRewardVideo();
       } else if (event == RewardedVideoAdEvent.completed) {
