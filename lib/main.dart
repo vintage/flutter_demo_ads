@@ -6,6 +6,12 @@ import 'package:firebase_admob/firebase_admob.dart';
 const ANDROID_KEY = "ca-app-pub-4822657955324260~2836093970";
 const IOS_KEY = "ca-app-pub-4822657955324260~1933149801";
 
+// Replace these with keys from AdMob in order to start earning real cash
+// Warning: Use the pattern: Platform.isAndroid ? "android-key" : "ios-key";
+final String bannerId = Platform.isAndroid ? "ca-app-pub-4822657955324260/7680881068" : "ca-app-pub-4822657955324260/7680881068";
+final String interstitialId = Platform.isAndroid ? "ca-app-pub-4822657955324260/3343439981" : "ca-app-pub-4822657955324260/3358492672";
+final String rewardVideoId = Platform.isAndroid ? "ca-app-pub-4822657955324260/4639204197" : "ca-app-pub-4822657955324260/9540757641";
+
 void main() {
   String appId = Platform.isAndroid ? ANDROID_KEY : IOS_KEY;
   FirebaseAdMob.instance.initialize(appId: appId);
@@ -20,17 +26,34 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   InterstitialAd interstitial;
+  List<Widget> boxes = [];
+  int coins = 0;
 
   @override
   void initState() {
+    boxes = getInitialBoxes();
     showBanner();
     loadInterstitial();
+    loadRewardVideo();
     super.initState();
+  }
+
+  List<Widget> getInitialBoxes() {
+    return [
+      Container(width: 50, height: 50, color: Colors.green),
+      Container(width: 50, height: 50, color: Colors.green),
+      GestureDetector(
+        child: Container(width: 50, height: 50, color: Colors.red),
+        onTap: showInterstitial,
+      ),
+      Container(width: 50, height: 50, color: Colors.green),
+      Container(width: 50, height: 50, color: Colors.green),
+    ];
   }
 
   void loadInterstitial() {
     interstitial = InterstitialAd(
-      adUnitId: InterstitialAd.testAdUnitId,
+      adUnitId: interstitialId,
       targetingInfo: MobileAdTargetingInfo(),
     );
     interstitial.listener = (MobileAdEvent event) {
@@ -43,7 +66,7 @@ class _AppState extends State<App> {
 
   void showBanner() async {
     var banner = BannerAd(
-      adUnitId: BannerAd.testAdUnitId,
+      adUnitId: bannerId,
       targetingInfo: MobileAdTargetingInfo(),
       size: AdSize.smartBanner,
     );
@@ -57,22 +80,33 @@ class _AppState extends State<App> {
   }
 
   void showInterstitial() async {
-    if (await interstitial.isLoaded()) {
-      interstitial.show();
-    }
+    setState(() {
+      coins++;
+      boxes.shuffle();
+    });
+    interstitial.show();
   }
 
-  void showRewardVideo() {
+  void loadRewardVideo() {
     RewardedVideoAd.instance.listener =
         (RewardedVideoAdEvent event, {String rewardType, int rewardAmount}) {
-      if (event == RewardedVideoAdEvent.loaded) {
-        RewardedVideoAd.instance.show();
+      print("RewardVideo event [$event], [$rewardType], [$rewardAmount]");
+      if (event == RewardedVideoAdEvent.closed) {
+        loadRewardVideo();
+      } else if (event == RewardedVideoAdEvent.completed) {
+        setState(() {
+          coins += 100;
+        });
       }
     };
     RewardedVideoAd.instance.load(
-      adUnitId: RewardedVideoAd.testAdUnitId,
+      adUnitId: rewardVideoId,
       targetingInfo: MobileAdTargetingInfo(),
     );
+  }
+
+  void showRewardVideo() async {
+    RewardedVideoAd.instance.show();
   }
 
   @override
@@ -84,21 +118,13 @@ class _AppState extends State<App> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Text("Coins: $coins"),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Container(width: 50, height: 50, color: Colors.green),
-                  Container(width: 50, height: 50, color: Colors.green),
-                  GestureDetector(
-                    child: Container(width: 50, height: 50, color: Colors.red),
-                    onTap: showInterstitial,
-                  ),
-                  Container(width: 50, height: 50, color: Colors.green),
-                  Container(width: 50, height: 50, color: Colors.green),
-                ],
+                children: boxes,
               ),
               RaisedButton(
-                child: Text("Show reward video"),
+                child: Text("Get FREE coins"),
                 onPressed: showRewardVideo,
               ),
             ],
